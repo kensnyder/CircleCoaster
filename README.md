@@ -17,9 +17,9 @@ Include CircleCoaster.js
 <script src="path/to/CircleCoaster.min.js"></script>
 ```
 
-Use JavaScript to insert the spinner.
+Use JavaScript to generate and insert the spinner.
 
-```
+```javascript
 new CircleCoaster({
 	size: 128,        // Size of the circle in pixels
 	speed: 1,         // Number of seconds for one revolution
@@ -60,7 +60,8 @@ Append the circle coaster as a child of `toElement`
 Remove a circle coaster that was injected into or appended to `fromElement`. It also removes the CSS block if it is not being used by another CircleCoaster instance.
 
 
-- License
+License
+-
 
 Copyright 2015 Ken Snyder
 
