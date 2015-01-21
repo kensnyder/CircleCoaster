@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Circle Coaster CSS3 Spinner Generator</title>
+
+<style>
+body {
+  font: 14px Arial;
+  color: #333;
+}
+select {
+  font: 13px Arial;
+  color: #333;
+}
+th {
+  font-weight: bold;
+  text-align: left;
+}
+#cv {
+  display: none;
+}
+#css {
+  width: 95%;
+  height: 300px;
+  font-size: 11px;
+}
+#preview {
+  border: 1px solid #ccc;
+  background-color: #f1f1f1;
+  display: inline-block;
+  line-height: 0;
+}
+</style>
+<link rel=stylesheet href=http://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/styles/default.min.css>
+<script src=http://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/highlight.min.js></script>
+<script src=CircleCoaster.js></script>
+</head>
+<body>
+  <h1>Circle Coaster CSS3 Spinner Generator</h1> 
+  <table>
+  <tr>
+    <th>Size
+    <td>
+      <select id=size>
+        <option value=12>12x12</option>
+        <option value=16>16x16</option>
+        <option value=20>20x20</option>
+        <option value=24>24x24</option>
+        <option value=32>32x32</option>
+        <option value=64>64x64</option>
+        <option value=96>96x96</option>
+        <option value=128 selected>128x128</option>
+        <option value=256>256x256</option>
+      </select>
+  <tr>
+    <th>Speed
+    <td>
+      <select id=speed>
+        <option value=2.5>Blub blub blub</option>
+        <option value=2.25>Very Slow</option>
+        <option value=2>Slow</option>
+        <option value=1.75>Medium Slow</option>
+        <option value=1.25 selected>Medium</option>
+        <option value=1>Medium Fast</option>
+        <option value=0.75>Fast</option>
+        <option value=0.5>Very Fast</option>
+        <option value=0.25>Whoa there Cowboy</option>
+      </select>
+  <tr>
+    <th># Dots
+    <td>
+      <select id=dots>
+        <option value=1>1</option>
+        <option value=2>2</option>
+        <option value=3>3</option>
+        <option value=4>4</option>
+        <option value=5 selected>5</option>
+        <option value=6>6</option>
+        <option value=7>7</option>
+        <option value=8>8</option>
+        <option value=9>9</option>
+        <option value=10>10</option>
+      </select>
+   <tr>
+    <th>Color
+    <td>   
+        <input type=color id=color value="#666666">
+</table>
+<h2>Preview</h2>
+<div id=preview></div>
+<h2>Include And Copy JavaScript</h2>
+<pre class=copy-code><code id=gen-script class=lang-html></code></pre>
+<pre class=copy-code><code id=gen-js class=lang-js></code></pre>
+
+<h2>OR Copy HTML and CSS</h2>
+<pre class=copy-code><code id=gen-html class=lang-html></code></pre>
+<pre class=copy-code><code id=gen-css class=lang-css></code></pre>
+
+
+<script>
+// BEGIN Page HTML helper functions
+function byId(id) {
+  return document.getElementById(id);
+}
+function render() {
+	var options = {
+    size: parseFloat(getVal('size')),
+    speed: parseFloat(getVal('speed')),
+    dots: parseFloat(getVal('dots')),
+    color: getVal('color')
+  };
+  var cc = new CircleCoaster(options);
+  window.location.hash = '#' + 
+    'size=' + cc.options.size +
+    '&speed=' + cc.options.speed +
+    '&dots=' + cc.options.dots +
+    '&color=' + encodeURIComponent(cc.options.color)
+  ;
+  byId('gen-html').textContent = cc.generateHtml();
+  byId('gen-css').innerHTML = cc.generateCss();
+  byId('gen-js').innerHTML = generateJs(options);
+  byId('gen-script').textContent = '<script src="path/to/CircleCoaster.min.js"><\/script>';
+  prettify();
+  cc.inject(byId('preview'));
+}
+function getVal(id) {
+  var el = byId(id);
+  if (el.tagName.toLowerCase() == 'input') {
+    return el.value;
+  }
+  return el.options[el.selectedIndex].value;
+}
+function setVal(id, val) {
+  var el = byId(id);
+  if (el.tagName.toLowerCase() == 'input') {
+    el.value = val;
+  }
+  else {
+    if (![].some.call(el.options, function(option, idx) {
+      if (option.value === val) {
+        el.selectedIndex = idx;
+        return true;
+      }
+    })) {
+      el.options[el.options.length] = new Option(getLabel(id, val), val);
+      el.selectedIndex = el.options.length - 1;
+    }
+  }
+}
+function getLabel(id, val) {
+  if (id == 'size') {
+    return val + 'x' + val;
+  }
+  else if (id == 'speed') {
+    return val + ' seconds';
+  }
+  else if (id === 'dots') {
+    return val;
+  }
+}
+function unserializeHash() {
+  window.location.hash.substring(1).split('&').forEach(function(kvpair) {
+    setVal(kvpair.split('=')[0], decodeURIComponent(kvpair.split('=')[1]));
+  });
+}
+function prettify() {
+  [].forEach.call(document.getElementsByTagName('pre'), function(pre) {
+    hljs.highlightBlock(pre);
+  });
+}
+function generateJs(options) {
+	var optionPairs = [];
+	for (var p in options) {
+		if (typeof options[p] == 'number') {
+			optionPairs.push('\t' + p + ': ' + options[p]);
+		}
+		else {
+			optionPairs.push('\t' + p + ': "' + options[p] + '"');			
+		}
+	}
+	var js = "new CircleCoaster({\n" + optionPairs.join(",\n") + "\n}).inject(document.getElementById('preview'));";
+	js += "\n\n// or jQuery:\n";
+	js += "$('#preview').circleCoaster({\n" + optionPairs.join(",\n") + "\n});"; 
+	return js;
+}
+// END Page HTML helper functions
+
+// BEGIN Page setup
+if (window.location.hash) {
+  unserializeHash();
+}
+render();
+// add onchange handlers
+var size = byId('size');
+var speed = byId('speed');
+var dots = byId('dots');
+var color = byId('color');
+size.onchange = speed.onchange = dots.onchange = color.onchange = render;
+// respond to window hash changes
+window.onhashchange = function hashchangeHandler() {
+  unserializeHash();
+  render();
+};
+// END Page setup
+
+</script>
+</body>
+</html>
